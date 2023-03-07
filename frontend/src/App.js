@@ -1,22 +1,25 @@
 import { useEffect, useState } from "react";
 import Card from "./components/card/Card";
 import Navbar from "./components/navbar/Navbar";
-import { data } from "./data";
+import data from "./data";
 import { io } from "socket.io-client";
 import "./App.css";
+import SelectUser from "./components/SelectUser";
 
 const App = () => {
-  const [username, setUsername] = useState("");
-  const [user, setUser] = useState("");
-  const [socket, setSocket] = useState(null);
+  const socket = io("http://localhost:5000");
+
+  const [username, setUsername] = useState(null);
+
+  const [user, setUser] = useState(null);
+
+  function setCurrentUser(username) {
+    setUser(username);
+  }
 
   useEffect(() => {
-    setSocket(io("http://localhost:5000"));
-  }, []);
-
-  useEffect(() => {
-    socket?.emit("newUser", user);
-  }, [socket, user]);
+    if (user) socket?.emit("newUser", user);
+  }, [user]);
 
   return (
     <div className="App">
@@ -35,14 +38,7 @@ const App = () => {
           <h3>User-{user}</h3>
         </div>
       ) : (
-        <div>
-          <input
-            type="text"
-            placeholder="username"
-            onChange={(e) => setUsername(e.target.value)}
-          />
-          <button onClick={() => setUser(username)}>Login</button>
-        </div>
+        <SelectUser setUser={setCurrentUser} />
       )}
     </div>
   );
