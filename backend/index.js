@@ -39,13 +39,16 @@ io.on("connection", (socket) => {
       });
     }
   );
-  socket.on("message", ({senderName,receiverName,type,message}) => {
-    const receiver = getUser(receiverName);
-    io.to(receiver.socketId).emit("getMessages",{
-      senderName,
-      type,
-      message
-    })
+  socket.on("message", ({ senderName, receiverName, type, message }) => {
+    // console.log(receiverName)
+    receiverName.forEach((item) => {
+      const receiver = getUser(item);
+      io.to(receiver.socketId).emit("getMessages", {
+        senderName,
+        type,
+        message,
+      });
+    });
   })
 
   socket.on("disconnect", () => {

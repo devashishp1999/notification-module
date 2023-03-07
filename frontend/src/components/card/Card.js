@@ -1,67 +1,87 @@
 import React, { useState } from "react";
+import {data} from "../../data.js";
 
-const Card = ({ item, socket, user }) => {
+const Card = ({ socket, user, openChat }) => {
   const [message, setMessage] = useState("");
-  const [openChat, setOpenChat] = useState(false);
+
   const [chatMessage, setChatMessage] = useState("");
 
+  let [sendTo, setSendTo] = useState([]);
   const handleClick = () => {};
 
   const handleNotification = (type, message) => {
-    setOpenChat(true)
-    if (type === "response_to_teacher" && message !== "")
-      socket.emit("sendNotification", {
+    document
+      .querySelectorAll(".checkbox")
+      .forEach((checkbox) => (checkbox.checked = false));
+    setSendTo([]);
+    if (user.includes("student")) {
+      if (type === "message" && message !== "") {
+        return socket.emit("message", {
+          senderName: user,
+          receiverName: ["teacher"],
+          type,
+          message,
+        });
+      }
+    }
+    if (type === "message" && message !== "")
+      socket.emit("message", {
         senderName: user,
-        receiverName: item.username,
+        receiverName: sendTo,
         type,
         message,
       });
-    else {
-      socket.emit("sendNotification", {
-        senderName: user,
-        receiverName: item.username,
-        type,
-        message,
-      });
+  };
+
+  const handleChange = (e) => {
+    if (e.target.checked) {
+      setSendTo([...sendTo, e.target.value]);
+    } else {
+      sendTo = sendTo.splice(sendTo.indexOf(e.target.value), 1);
+      setSendTo(sendTo);
     }
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        gap: "1rem",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <p>{item.fullname}</p>
+    <div>
       <div>
-        {user === "teacher" ? (
-          <button onClick={() => handleNotification("marks", "")}>
-            Send Marks
-          </button>
-        ) : (
-          <>
-            <input
-              type={"text"}
-              placeholder="Type your message.."
-              value={message}
-              onChange={(e) => setMessage(e.target.value)}
-            />
-            <button
-              onClick={() => {
-                handleNotification("response_to_teacher", message);
-                setMessage("");
-              }}
-            >
-              Send Response to teacher
-            </button>
-          </>
-        )}
+        {data.map((item) => (
+          <div key={item.id}>
+            {user === "teacher" && item.username.includes("student") ? (
+              <div>
+                {item.fullname}
+                <span>
+                  <input
+                    className="checkbox"
+                    value={item.username}
+                    onChange={handleChange}
+                    type={"checkbox"}
+                  />
+                </span>
+              </div>
+            ) : (
+              ""
+            )}
+          </div>
+        ))}
       </div>
-      {
-        openChat ? 
+      <div>
+        <input
+          type={"text"}
+          placeholder="Type your message.."
+          value={message}
+          onChange={(e) => setMessage(e.target.value)}
+        />
+        <button
+          onClick={() => {
+            handleNotification("message", message);
+            setMessage("");
+          }}
+        >
+          Send Message
+        </button>
+      </div>
+      {openChat ? (
         <div
           style={{
             border: "1px solid",
@@ -82,8 +102,10 @@ const Card = ({ item, socket, user }) => {
               <button onClick={handleClick}>Send</button>
             </span>
           </div>
-        </div> : ""
-      }
+        </div>
+      ) : (
+        ""
+      )}
     </div>
   );
 };

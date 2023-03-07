@@ -1,21 +1,28 @@
 import { useEffect, useState } from "react";
 
-const Navbar = ({ socket }) => {
+const Navbar = ({ socket,setOpenChat }) => {
   const [notifications, setNotifications] = useState([]);
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
-    socket.on("getNotification", (data) => {
+    socket.on("getMessages", (data) => {
       setNotifications((prev) => [...prev, data]);
     });
   }, [socket]);
 
   const displayNotification = ({ senderName, type,message },i) => {
     let action;
-    if (type === "marks") {
-      action = "gave";
+    setOpenChat(true)
+    // if (type === "marks") {
+    //   action = "gave";
+    //   return (
+    //     <div key={i}>{`${senderName} ${action} you marks.`}</div>
+    //   );
+    // }
+    if (type === "message") {
+      action = "sent";
       return (
-        <div key={i}>{`${senderName} ${action} you marks.`}</div>
+        <div key={i}>{`${senderName} ${action} a message - ${message}`}</div>
       );
     }
     else if(type==="response_to_teacher"){

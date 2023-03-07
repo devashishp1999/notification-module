@@ -1,5 +1,5 @@
 import React from "react";
-import usersList from "../data";
+import {data as usersList} from "../data";
 
 const SelectUser = ({setUser}) => {
   return (
